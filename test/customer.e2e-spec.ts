@@ -53,28 +53,23 @@ describe('CustomerController (e2e)', () => {
   });
 
   it('/customer/1 (PATCH)', async () => {
-    const newAddress = { address: 'New New Address' };
+    const newEmail = { email: 'newemail@customer.com' };
     await app.get(CustomerService).create(customer);
     return request(app.getHttpServer())
       .patch('/customer/1')
-      .send(newAddress)
+      .send(newEmail)
       .expect(200)
-      .expect({ ...databaseCustomer, ...newAddress });
+      .expect({ ...databaseCustomer, ...newEmail });
   });
 
-  it('Should return 400 when try update name /customer/1 (PATCH)', async () => {
+  it('Should return 400 when try create a user with a already used email (PATCH)', async () => {
     await app.get(CustomerService).create(customer);
     return request(app.getHttpServer())
       .patch('/customer/1')
-      .send({ name: 'New New Name' })
+      .send({ email: 'customer@email.com' })
       .expect(400)
       .expect({
-        statusCode: 400,
-        message: [
-          'property name should not exist',
-          'address should not be empty',
-        ],
-        error: 'Bad Request',
+        message: 'This email address is already being used.',
       });
   });
 

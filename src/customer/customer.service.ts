@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
@@ -13,7 +13,20 @@ export class CustomerService {
   ) {}
 
   create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
-    return this.customersRepository.save(new Customer(createCustomerDto));
+    return this.customersRepository
+      .save(new Customer(createCustomerDto))
+      .catch((err) => {
+        if (err instanceof QueryFailedError) {
+          if (err.driverError.code === 'ER_DUP_ENTRY') {
+            throw new HttpException(
+              'This email address is already being used.',
+              400,
+            );
+          }
+        }
+
+        throw err;
+      });
   }
 
   findAll(): Promise<Customer[]> {
