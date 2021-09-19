@@ -12,13 +12,21 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
 
-@Controller('customer')
+@Controller()
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
   @Post()
   create(@Body() createCustomerDto: CreateCustomerDto): Promise<Customer> {
     return this.customerService.create(createCustomerDto);
+  }
+
+  @Post(':id/product')
+  addProduct(
+    @Param('id') id: string,
+    @Body('productId') productId: string,
+  ): Promise<any> {
+    return this.customerService.addProductOnFavoritsList(Number(id), productId);
   }
 
   @Get()

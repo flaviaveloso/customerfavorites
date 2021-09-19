@@ -4,6 +4,7 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
+import * as axios from 'axios';
 
 @Injectable()
 export class CustomerService {
@@ -30,11 +31,11 @@ export class CustomerService {
   }
 
   findAll(): Promise<Customer[]> {
-    return this.customersRepository.find();
+    return this.customersRepository.find({ relations: ['favorites'] });
   }
 
   findOne(id: number): Promise<Customer> {
-    return this.customersRepository.findOne(id);
+    return this.customersRepository.findOne(id, { relations: ['favorites'] });
   }
 
   update(id: number, updateCustomerDto: UpdateCustomerDto): Promise<Customer> {
@@ -47,5 +48,21 @@ export class CustomerService {
     return this.customersRepository.findOne(id).then((customer) => {
       return this.customersRepository.remove(customer);
     });
+  }
+
+  async addProductOnFavoritsList(id: number, productId: string): Promise<any> {
+    const product = await axios.default.get(
+      `http://challenge-api.luizalabs.com/api/product/${productId}/`,
+    );
+
+    const customer = await this.customersRepository.findOne(id, {
+      relations: ['favorites'],
+    });
+
+    customer.setFavorite(product.data);
+    console.log('new customer', customer);
+    this.customersRepository.save(customer);
+
+    return product.data;
   }
 }

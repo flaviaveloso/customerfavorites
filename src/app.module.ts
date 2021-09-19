@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { RouterModule } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -17,6 +18,17 @@ import { CustomerModule } from './customer/customer.module';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    RouterModule.register([
+      {
+        path: 'customer',
+        module: CustomerModule,
+        children: [
+          {
+            path: 'product',
+          },
+        ],
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [AppService],
