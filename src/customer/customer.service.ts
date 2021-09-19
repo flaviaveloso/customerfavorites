@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -21,7 +21,7 @@ export class CustomerService {
           if (err.driverError.code === 'ER_DUP_ENTRY') {
             throw new HttpException(
               'This email address is already being used.',
-              400,
+              HttpStatus.CONFLICT,
             );
           }
         }
@@ -40,7 +40,7 @@ export class CustomerService {
 
   update(id: number, updateCustomerDto: UpdateCustomerDto): Promise<Customer> {
     return this.customersRepository.update(id, updateCustomerDto).then(() => {
-      return this.customersRepository.findOne(id);
+      return this.customersRepository.findOne(id, { relations: ['favorites'] });
     });
   }
 
@@ -50,19 +50,41 @@ export class CustomerService {
     });
   }
 
-  async addProductOnFavoritsList(id: number, productId: string): Promise<any> {
-    const product = await axios.default.get(
-      `http://challenge-api.luizalabs.com/api/product/${productId}/`,
-    );
+  addProductToFavorites(id: number, productId: string): Promise<Customer> {
+    return axios.default
+      .get(`http://challenge-api.luizalabs.com/api/product/${productId}/`)
+      .then(async (product) => {
+        const customer = await this.customersRepository.findOne(id, {
+          relations: ['favorites'],
+        });
 
+        customer.setFavorite(product.data);
+        this.customersRepository.save(customer);
+
+        return product.data;
+      })
+      .catch((err) => {
+        if (err.response.data.code === 'not_found') {
+          throw new HttpException(
+            `Product ${productId} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      });
+  }
+
+  async removeProductFromFavorites(
+    id: number,
+    productId: string,
+  ): Promise<Customer> {
     const customer = await this.customersRepository.findOne(id, {
       relations: ['favorites'],
     });
 
-    customer.setFavorite(product.data);
-    console.log('new customer', customer);
-    this.customersRepository.save(customer);
+    customer.favorites = customer.favorites.filter((favoriteProduct) => {
+      return favoriteProduct.id !== productId;
+    });
 
-    return product.data;
+    return this.customersRepository.save(customer);
   }
 }

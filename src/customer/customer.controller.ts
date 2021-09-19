@@ -22,11 +22,11 @@ export class CustomerController {
   }
 
   @Post(':id/product')
-  addProduct(
+  favoriteProduct(
     @Param('id') id: string,
     @Body('productId') productId: string,
   ): Promise<any> {
-    return this.customerService.addProductOnFavoritsList(Number(id), productId);
+    return this.customerService.addProductToFavorites(Number(id), productId);
   }
 
   @Get()
@@ -50,5 +50,16 @@ export class CustomerController {
   @Delete(':id')
   remove(@Param('id') id: string): Promise<Customer> {
     return this.customerService.remove(Number(id));
+  }
+
+  @Delete(':id/product/:productId')
+  removeFavoriteProduct(
+    @Param('id') id: string,
+    @Param('productId') productId: string,
+  ): Promise<any> {
+    return this.customerService.removeProductFromFavorites(
+      Number(id),
+      productId,
+    );
   }
 }
