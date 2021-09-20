@@ -1,20 +1,17 @@
-import { IsDecimal } from 'class-validator';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class Product {
   @PrimaryColumn()
   id: string;
-  @Column()
-  @IsDecimal()
+  @Column({ type: 'double' })
   price: number;
   @Column()
   image: string;
   @Column()
   title: string;
-  @Column({ nullable: true })
-  @IsDecimal()
+  @Column({ nullable: true, type: 'double' })
   reviewScore: number;
-  @Column()
-  brand: string;
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 }
