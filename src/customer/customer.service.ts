@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -6,6 +12,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
 import * as axios from 'axios';
 import { Product } from './entities/product.entity';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class CustomerService {
@@ -14,6 +21,7 @@ export class CustomerService {
     private customersRepository: Repository<Customer>,
     @InjectRepository(Product)
     private productsRepository: Repository<Product>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
@@ -83,6 +91,7 @@ export class CustomerService {
   ): Promise<Customer> {
     try {
       const promises = await Promise.all([
+        // this.cacheManager.match('productId'),
         this.productsRepository.findOne(productId),
         this.customersRepository.findOne(id, {
           relations: ['favorites'],
@@ -103,13 +112,14 @@ export class CustomerService {
         );
       }
 
-      if (new Date(Date.now() - 1000 * 10) < databaseProduct?.updatedAt) {
+      if (new Date(Date.now() - 5000 * 60) < databaseProduct?.updatedAt) {
         customer.setFavorite(databaseProduct);
       } else {
         const response = await axios.default.get(
           `http://challenge-api.luizalabs.com/api/product/${productId}/`,
         );
 
+        this.cacheManager.set('productId', response.data);
         customer.setFavorite({ ...response.data, updatedAt: new Date() });
       }
 

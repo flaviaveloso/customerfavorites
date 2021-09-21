@@ -7,17 +7,24 @@ import {
   Param,
   Delete,
   Query,
+  CacheInterceptor,
+  UseInterceptors,
 } from '@nestjs/common';
+import { SkipAuth } from '../custom/skipAuth.decorator';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
 import { Product } from './entities/product.entity';
 
-@Controller()
+@Controller({
+  version: '1',
+})
+@UseInterceptors(CacheInterceptor)
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
+  @SkipAuth()
   @Post()
   create(@Body() createCustomerDto: CreateCustomerDto): Promise<Customer> {
     return this.customerService.create(createCustomerDto);
