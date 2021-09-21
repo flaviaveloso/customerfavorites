@@ -5,12 +5,15 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
 import * as axios from 'axios';
+import { Product } from './entities/product.entity';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectRepository(Customer)
     private customersRepository: Repository<Customer>,
+    @InjectRepository(Product)
+    private productsRepository: Repository<Product>,
   ) {}
 
   create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
@@ -30,12 +33,36 @@ export class CustomerService {
       });
   }
 
-  findAll(): Promise<Customer[]> {
-    return this.customersRepository.find({ relations: ['favorites'] });
+  findAll(page: number): Promise<Customer[]> {
+    if (page === 0) {
+      throw new HttpException(`Page ${page} not found`, HttpStatus.NOT_FOUND);
+    }
+
+    const pageSize = 2;
+    return this.customersRepository.find({
+      relations: ['favorites'],
+      skip: pageSize * (page - 1),
+      take: pageSize,
+    });
   }
 
   findOne(id: number): Promise<Customer> {
-    return this.customersRepository.findOne(id, { relations: ['favorites'] });
+    return this.customersRepository
+      .findOne(id, {
+        relations: ['favorites'],
+      })
+      .then((customer) => {
+        customer.favorites.forEach((favoriteProduct) => {
+          if (!favoriteProduct.reviewScore)
+            Reflect.deleteProperty(favoriteProduct, 'reviewScore');
+        });
+        return customer;
+      });
+  }
+
+  async findProducts(id: number): Promise<Product[]> {
+    const result = await this.findOne(id);
+    return result.favorites;
   }
 
   update(id: number, updateCustomerDto: UpdateCustomerDto): Promise<Customer> {
@@ -50,27 +77,53 @@ export class CustomerService {
     });
   }
 
-  addProductToFavorites(id: number, productId: string): Promise<Customer> {
-    return axios.default
-      .get(`http://challenge-api.luizalabs.com/api/product/${productId}/`)
-      .then(async (product) => {
-        const customer = await this.customersRepository.findOne(id, {
+  async addProductToFavorites(
+    id: number,
+    productId: string,
+  ): Promise<Customer> {
+    try {
+      const promises = await Promise.all([
+        this.productsRepository.findOne(productId),
+        this.customersRepository.findOne(id, {
           relations: ['favorites'],
-        });
+        }),
+      ]);
 
-        customer.setFavorite(product.data);
-        this.customersRepository.save(customer);
+      const databaseProduct = promises[0];
+      const customer = promises[1];
 
-        return product.data;
-      })
-      .catch((err) => {
-        if (err.response.data.code === 'not_found') {
-          throw new HttpException(
-            `Product ${productId} not found`,
-            HttpStatus.NOT_FOUND,
-          );
-        }
-      });
+      const exists = customer.favorites.some(
+        (favoriteProduct) => favoriteProduct.id === productId,
+      );
+
+      if (exists) {
+        throw new HttpException(
+          `Product already in customer favorites list`,
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      if (new Date(Date.now() - 1000 * 10) < databaseProduct?.updatedAt) {
+        customer.setFavorite(databaseProduct);
+      } else {
+        const response = await axios.default.get(
+          `http://challenge-api.luizalabs.com/api/product/${productId}/`,
+        );
+
+        customer.setFavorite({ ...response.data, updatedAt: new Date() });
+      }
+
+      return this.customersRepository.save(customer);
+    } catch (err) {
+      if (err.isAxiosError && err.response.data.code === 'not_found') {
+        throw new HttpException(
+          `Product ${productId} not found`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      throw err;
+    }
   }
 
   async removeProductFromFavorites(
@@ -82,7 +135,7 @@ export class CustomerService {
     });
 
     customer.favorites = customer.favorites.filter((favoriteProduct) => {
-      return favoriteProduct.id !== productId;
+      favoriteProduct.id !== productId;
     });
 
     return this.customersRepository.save(customer);

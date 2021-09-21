@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
+import { Product } from './entities/product.entity';
 
 @Controller()
 export class CustomerController {
@@ -30,13 +32,18 @@ export class CustomerController {
   }
 
   @Get()
-  findAll(): Promise<Customer[]> {
-    return this.customerService.findAll();
+  findAll(@Query('page') page = '1'): Promise<Customer[]> {
+    return this.customerService.findAll(Number(page));
   }
 
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Customer> {
     return this.customerService.findOne(Number(id));
+  }
+
+  @Get(':id/product')
+  findFavoritesProducts(@Param('id') id: string): Promise<Product[]> {
+    return this.customerService.findProducts(Number(id));
   }
 
   @Patch(':id')
