@@ -33,6 +33,10 @@ import { jwtConstants } from './auth/contants';
           },
         ],
       },
+      {
+        path: 'user',
+        module: UserModule,
+      },
     ]),
     JwtModule.register({
       secret: jwtConstants.secret,
