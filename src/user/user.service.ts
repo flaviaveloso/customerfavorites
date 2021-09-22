@@ -19,10 +19,6 @@ export class UserService {
     return this.usersRepository.findOne({ where: { username } });
   }
 
-  async findOneById(id: number): Promise<User> {
-    return this.usersRepository.findOne(id);
-  }
-
   async create(user: any): Promise<User> {
     const saltRounds = 10;
     return bcrypt.hash(user.password, saltRounds).then((result) => {
@@ -34,11 +30,11 @@ export class UserService {
     });
   }
 
-  async update(id: number, user: any): Promise<any> {
-    return this.usersRepository.update(id, user);
+  async update(username: string, user: any): Promise<any> {
+    return this.usersRepository.update(username, user);
   }
 
-  async remove(id: number): Promise<any> {
-    return this.usersRepository.delete(id);
+  async remove(username: string): Promise<any> {
+    return this.usersRepository.delete(username);
   }
 }

@@ -36,20 +36,23 @@ export class UserController {
   }
 
   @Roles(Role.Admin, Role.User)
-  @Get(':id')
-  findOne(@Param('id') id: string): Promise<User> {
-    return this.userService.findOneById(Number(id));
+  @Get(':username')
+  findOne(@Param('username') username: string): Promise<User> {
+    return this.userService.findOne(username);
   }
 
   @Roles(Role.Admin, Role.User)
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: any): Promise<any> {
-    return this.userService.update(Number(id), updateUserDto);
+  @Patch(':username')
+  update(
+    @Param('username') username: string,
+    @Body() updateUserDto: any,
+  ): Promise<any> {
+    return this.userService.update(username, updateUserDto);
   }
 
   @Roles(Role.Admin)
-  @Delete(':id')
-  remove(@Param('id') id: string): Promise<any> {
-    return this.userService.remove(Number(id));
+  @Delete(':username')
+  remove(@Param('username') username: string): Promise<any> {
+    return this.userService.remove(username);
   }
 }
