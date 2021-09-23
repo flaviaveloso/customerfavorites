@@ -32,7 +32,7 @@ export class UserController {
   @Roles(Role.Admin, Role.User)
   @Get()
   findAll(@Query('page') page = '1'): Promise<User[]> {
-    return this.userService.findAll();
+    return this.userService.findAll(Number(page));
   }
 
   @Roles(Role.Admin, Role.User)

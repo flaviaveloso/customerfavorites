@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -11,8 +11,16 @@ export class UserService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  async findAll(page: number): Promise<User[]> {
+    if (page === 0) {
+      throw new HttpException(`Page ${page} not found`, HttpStatus.NOT_FOUND);
+    }
+
+    const pageSize = 2;
+    return this.usersRepository.find({
+      skip: pageSize * (page - 1),
+      take: pageSize,
+    });
   }
 
   async findOne(username: string): Promise<User> {
