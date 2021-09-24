@@ -19,12 +19,6 @@ export class EnvironmentVariables {
   @mustBe(a.string())
   MYSQL_DATABASE: string;
 
-  @mustBe(a.string().hostname())
-  REDIS_HOST: string;
-
-  @mustBe(a.number().integer().min(1).max(65535).default(6379))
-  REDIS_PORT: number;
-
   @mustBe(a.number().integer().min(10))
   PAGINATION_SIZE: number;
 
