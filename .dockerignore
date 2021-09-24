@@ -1,1 +1,12 @@
 node_modules
+.env
+.git
+.gitignore
+*.spec.ts
+*.test.ts
+coverage
+dist
+docker-compose.yml
+node_modules
+README.md
+test

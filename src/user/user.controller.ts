@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   Query,
-  CacheInterceptor,
-  UseInterceptors,
 } from '@nestjs/common';
 import { Roles } from '../decorator/roles.decorator';
 import { SkipAuth } from '../decorator/skipAuth.decorator';
@@ -19,7 +17,6 @@ import { UserService } from './user.service';
 @Controller({
   version: '1',
 })
-@UseInterceptors(CacheInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

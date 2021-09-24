@@ -8,7 +8,6 @@ import { AuthService } from './auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './auth/contants';
 import { OrmModule } from './orm/orm.module';
-import { CacheModule } from './cache/redis.module';
 import { ConfigModule } from './config/config.module';
 import { RouteModule } from './route/route.module';
 
@@ -16,7 +15,6 @@ import { RouteModule } from './route/route.module';
   imports: [
     ConfigModule,
     OrmModule,
-    CacheModule,
     AuthModule,
     CustomerModule,
     UserModule,

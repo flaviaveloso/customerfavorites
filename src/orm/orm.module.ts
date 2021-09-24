@@ -17,7 +17,9 @@ import { ConfigModule } from '../config/config.module';
           username: configService.get('MYSQL_USER'),
           password: configService.get('MYSQL_PASSWORD'),
           database: configService.get('MYSQL_DATABASE'),
-          synchronize: ['localhost'].includes(configService.get('MYSQL_HOST'))
+          synchronize: ['localhost', 'mysql'].includes(
+            configService.get('MYSQL_HOST'),
+          )
             ? true
             : false,
           autoLoadEntities: true,

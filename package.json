@@ -1,8 +1,8 @@
 {
   "name": "customerfavorites",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "The purpose of this project is to help customers to create a list of favorites products",
+  "author": "Flávia Veloso",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -64,6 +64,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "jest": "^27.0.6",
     "prettier": "^2.3.2",
+    "sinon": "^11.1.2",
     "supertest": "^6.1.3",
     "ts-jest": "^27.0.3",
     "ts-loader": "^9.2.3",

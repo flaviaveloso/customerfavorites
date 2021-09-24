@@ -25,6 +25,12 @@ export class EnvironmentVariables {
   @mustBe(a.number().integer().min(1).max(65535).default(6379))
   REDIS_PORT: number;
 
+  @mustBe(a.number().integer().min(10))
+  PAGINATION_SIZE: number;
+
+  @mustBe(a.string())
+  JWT_SECRET: string;
+
   constructor() {
     Object.keys(process.env).forEach((key: string) => {
       this[key] = process.env[key];

@@ -1,10 +1,4 @@
-import {
-  CACHE_MANAGER,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -12,7 +6,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
 import * as axios from 'axios';
 import { Product } from './entities/product.entity';
-import { Cache } from 'cache-manager';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CustomerService {
@@ -21,7 +15,7 @@ export class CustomerService {
     private customersRepository: Repository<Customer>,
     @InjectRepository(Product)
     private productsRepository: Repository<Product>,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private configService: ConfigService,
   ) {}
 
   create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
@@ -42,11 +36,11 @@ export class CustomerService {
   }
 
   findAll(page: number): Promise<Customer[]> {
-    if (page === 0) {
+    if (page < 1) {
       throw new HttpException(`Page ${page} not found`, HttpStatus.NOT_FOUND);
     }
 
-    const pageSize = 2;
+    const pageSize = this.configService.get('PAGINATION_SIZE');
     return this.customersRepository.find({
       relations: ['favorites'],
       skip: pageSize * (page - 1),
@@ -79,10 +73,11 @@ export class CustomerService {
     });
   }
 
-  remove(id: number): Promise<Customer> {
-    return this.customersRepository.findOne(id).then((customer) => {
-      return this.customersRepository.remove(customer);
-    });
+  async remove(id: number): Promise<Customer> {
+    const customer = await this.customersRepository.findOne(id);
+    if (customer) return this.customersRepository.remove(customer);
+
+    throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
   }
 
   async addProductToFavorites(
@@ -91,7 +86,6 @@ export class CustomerService {
   ): Promise<Customer> {
     try {
       const promises = await Promise.all([
-        // this.cacheManager.match('productId'),
         this.productsRepository.findOne(productId),
         this.customersRepository.findOne(id, {
           relations: ['favorites'],
@@ -119,7 +113,6 @@ export class CustomerService {
           `http://challenge-api.luizalabs.com/api/product/${productId}/`,
         );
 
-        this.cacheManager.set('productId', response.data);
         customer.setFavorite({ ...response.data, updatedAt: new Date() });
       }
 

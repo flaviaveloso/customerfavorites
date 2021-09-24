@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   Query,
-  CacheInterceptor,
-  UseInterceptors,
 } from '@nestjs/common';
 import { Roles } from '../decorator/roles.decorator';
 import { Role } from '../enum/role.enum';
@@ -21,7 +19,6 @@ import { Product } from './entities/product.entity';
 @Controller({
   version: '1',
 })
-@UseInterceptors(CacheInterceptor)
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 

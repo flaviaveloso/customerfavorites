@@ -28,7 +28,7 @@ export class Customer {
     this.email = createCustomerDto?.email;
   }
 
-  setFavorite(product: Product) {
+  setFavorite(product: Product): void {
     this.favorites.push(product);
   }
 }
