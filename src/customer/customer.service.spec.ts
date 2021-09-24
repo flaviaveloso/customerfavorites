@@ -6,6 +6,7 @@ import { Customer } from './entities/customer.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { HttpException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 describe('CustomerService', () => {
   let customerService: CustomerService;
@@ -49,6 +50,7 @@ describe('CustomerService', () => {
       imports: [],
       providers: [
         CustomerService,
+        ConfigService,
         {
           provide: getRepositoryToken(Customer),
           useValue: {

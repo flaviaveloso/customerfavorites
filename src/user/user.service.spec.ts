@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { HttpException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Role } from '../enum/role.enum';
+import { ConfigService } from '@nestjs/config';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -34,6 +35,7 @@ describe('UserService', () => {
       imports: [],
       providers: [
         UserService,
+        ConfigService,
         {
           provide: getRepositoryToken(User),
           useValue: {
