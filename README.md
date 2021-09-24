@@ -67,9 +67,6 @@ $ yarn run start:dev
 # unit tests
 $ yarn run test
 
-# e2e tests
-$ yarn run test:e2e
-
 # test coverage
 $ yarn run test:cov
 ```
@@ -88,8 +85,8 @@ docker compose up
 ## TODO
 
 - Add cache on the application to optimaze the database perfomance using Redis
-- Improve e2e test coverage
-- Improve unit test coverage
+- Add e2e tests
+- Improve unit tests coverage
 - Improve return on api endpoints
 - Add OpenApi/Swagger documentation
 - Add sequence and architecture diagrams
